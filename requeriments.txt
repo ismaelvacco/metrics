@@ -1,0 +1,7 @@
+backports-abc==0.4
+certifi==2016.8.2
+hiredis==0.2.0
+singledispatch==3.4.0.3
+six==1.10.0
+toredis==0.1.2
+tornado==4.4.1
