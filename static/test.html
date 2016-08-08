@@ -4,12 +4,22 @@
     <!-- Piwik -->
     <script type="text/javascript">
       var _paq = _paq || [];
-      _paq.push(['trackPageView']);
       _paq.push(['enableLinkTracking']);
       (function() {
         var u="//localhost:8000/";
         _paq.push(['setTrackerUrl', u+'capture']);
         _paq.push(['setSiteId', 1]);
+        _paq.push(['setCustomVariable',
+            1,"customer_id","{{customer_id}}","visit"
+        ]);
+        _paq.push(['setCustomVariable',
+            1,"gender","{{gender}}","visit"
+        ]);
+        _paq.push(['setCustomVariable',
+            1,"age","{{age}}","visit"
+        ]);
+        _paq.push(['trackPageView']);
+
         var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
         g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'static/piwik.js'; s.parentNode.insertBefore(g,s);
       })();

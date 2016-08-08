@@ -5,8 +5,12 @@ from toredis import Client
 
 import json
 import ConfigParser
+import logging
+
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 import os
+from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))+"..")
 STATIC_DIR =  "%s/static/" % (BASE_DIR)
@@ -19,8 +23,11 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         payload = json.dumps({ k: self.get_argument(k) for k in self.request.arguments })
         id = self.get_argument('_id')
+        d = datetime.now()
         browsertime = "%02d%02d%02d%s" % (int(self.get_argument('h')), int(self.get_argument('m')), int(self.get_argument('s')), self.get_argument('r'))
-        key = "transaction:%s:%s" % (id, browsertime)
+        date = d.strftime('%Y%m%d')
+        key = "transaction:%s:%s%s" % (id, date, browsertime)
+        logging.debug(payload)
         redis.set(key, payload)
         self.write("")
 
