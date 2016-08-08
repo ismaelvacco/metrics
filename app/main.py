@@ -7,7 +7,7 @@ import json
 import ConfigParser
 import logging
 
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.WARNING)
 
 import os
 from datetime import datetime
@@ -21,12 +21,21 @@ config.read("%s/config.ini" % (CONFIG_DIR))
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        payload = json.dumps({ k: self.get_argument(k) for k in self.request.arguments })
+        data = { k: self.get_argument(k) for k in self.request.arguments }
         id = self.get_argument('_id')
         d = datetime.now()
         browsertime = "%02d%02d%02d%s" % (int(self.get_argument('h')), int(self.get_argument('m')), int(self.get_argument('s')), self.get_argument('r'))
         date = d.strftime('%Y%m%d')
         key = "transaction:%s:%s%s" % (id, date, browsertime)
+
+        # get remote ip
+        x_real_ip = self.request.headers.get("X-Real-IP")
+        remote_ip = x_real_ip or self.request.remote_ip
+
+        data['eot-remote-ip'] = remote_ip
+        data['eot-user-agent'] = self.request.headers.get("User-Agent")
+
+        payload = json.dumps(data)
         logging.debug(payload)
         redis.set(key, payload)
         self.write("")
