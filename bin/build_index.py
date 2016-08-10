@@ -17,7 +17,11 @@ r = redis.StrictRedis(host=config.get('redis','hostname'), port=config.getint('r
 
 
 def index_customer_id():
-    for k in r.scan_iter("*"):
+    for k in r.keys("*"):
+        k_piece = k.split(":")
+        cookie_id = k_piece[1]
+        if not len(cookie_id) == 16:
+            continue
         payload = json.loads(r.get(k))
         if '_cvar' in payload.keys():
             custom_vars = json.loads(payload['_cvar'])
@@ -27,7 +31,10 @@ def index_customer_id():
                 key = custom_vars["1"][0]
                 value = custom_vars["1"][1]
 
-                print {key:value}
+                if not value == "":
+                    redis_key = "customer_id:%s" % value
+                    r.set(redis_key, value)
+                    #print {key:value}
 
 
 if __name__ == '__main__':
