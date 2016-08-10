@@ -33,8 +33,8 @@ def index_customer_id():
 
                 if not value == "":
                     redis_key = "customer_id:%s" % value
-                    r.set(redis_key, value)
-                    #print {key:value}
+                    r.set(redis_key, cookie_id)
+                    #   print {key:value}
 
 
 if __name__ == '__main__':
