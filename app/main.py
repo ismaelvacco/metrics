@@ -54,6 +54,8 @@ class MainHandler(tornado.web.RequestHandler):
             return None
 
         value = self._get_customer_id(payload)
+        if value is None:
+            return None
         customer_key = "customer_id:%s:%s" % (value, cookie_id)
         return redis.set(customer_key, 1)
 
