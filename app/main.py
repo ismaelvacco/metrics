@@ -19,6 +19,8 @@ CONFIG_DIR =  "%s/etc/" % (BASE_DIR)
 config = ConfigParser.RawConfigParser()
 config.read("%s/config.ini" % (CONFIG_DIR))
 
+TIME_VISITOR_ALIVE = 90 # one minute and halt
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         data = { k: self.get_argument(k) for k in self.request.arguments }
@@ -35,10 +37,54 @@ class MainHandler(tornado.web.RequestHandler):
         data['eot-remote-ip'] = remote_ip
         data['eot-user-agent'] = self.request.headers.get("User-Agent")
 
+        # create customer_id index
+        self._create_index_customer_id(data)
+
+        # create active visitor index
+        self._create_index_active_visitors(data)
+
         payload = json.dumps(data)
         logging.debug(payload)
         redis.set(key, payload)
         self.write("")
+
+    def _create_index_customer_id(self, payload):
+        cookie_id = self.get_argument('_id')
+        if not len(cookie_id) == 16:
+            return None
+
+        value = self._get_customer_id(payload)
+        customer_key = "customer_id:%s:%s" % (value, cookie_id)
+        return redis.set(customer_key, 1)
+
+    def _create_index_active_visitors(self, payload):
+        cookie_id = self.get_argument('_id')
+
+        value = self._get_customer_id(payload)
+        value = 0 if value is None else value
+
+        active_visitor_key = "active_visitor:%s:%s" % (cookie_id, value)
+
+        redis.set(active_visitor_key, 1)
+        redis.expire(active_visitor_key, TIME_VISITOR_ALIVE)
+
+    def _get_customer_id(self, payload):
+        if not '_cvar' in payload.keys():
+            return None
+
+        custom_vars = json.loads(payload['_cvar'])
+        if not "1" in custom_vars.keys():
+            return None
+
+        key = custom_vars["1"][0]
+        value = custom_vars["1"][1]
+
+        if value == "":
+            return None
+
+        return value
+
+
 
 def make_app():
     return tornado.web.Application([
