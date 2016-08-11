@@ -19,7 +19,7 @@ CONFIG_DIR =  "%s/etc/" % (BASE_DIR)
 config = ConfigParser.RawConfigParser()
 config.read("%s/config.ini" % (CONFIG_DIR))
 
-TIME_VISITOR_ALIVE = 180 # one minute and halt
+TIME_VISITOR_ALIVE = 240 # one minute and halt
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
